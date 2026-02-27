@@ -1,87 +1,104 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Broadband Coverage Checker</title>
+    <title>Mobile Coverage Checker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <div class="container">
+        <h1>Mobile Coverage Checker</h1>
 
-    <header>
-        <h1>Broadband Coverage Checker</h1>
-        <p>Check the coverage for mobile broadband providers worldwide.</p>
-    </header>
-
-    <main class="container">
         <div class="form-container">
-            <h2>Check Coverage</h2>
-            <form id="coverage-form">
-                <label for="country">Select Country:</label>
-                <select id="country" required>
-                    <option value="saudi arabia">Saudi Arabia</option>
-                    <option value="uae">UAE</option>
-                    <option value="france">France</option>
-                    <option value="germany">Germany</option>
-                    <option value="switzerland">Switzerland</option>
-                </select>
+            <label for="country">Select Country:</label>
+            <select id="country">
+                <option value="saudi arabia">Saudi Arabia</option>
+                <option value="uae">UAE</option>
+                <option value="france">France</option>
+                <option value="germany">Germany</option>
+                <option value="switzerland">Switzerland</option>
+            </select>
 
-                <label for="provider">Select Provider:</label>
-                <select id="provider" required>
-                    <option value="stc">STC</option>
-                    <option value="mobily">Mobily</option>
-                    <option value="zain">Zain</option>
-                    <option value="etisalat">Etisalat</option>
-                    <option value="du">Du</option>
-                    <option value="orange">Orange</option>
-                    <option value="sfr">SFR</option>
-                    <option value="bouygues telecom">Bouygues Telecom</option>
-                    <option value="free mobile">Free Mobile</option>
-                    <option value="deutsche telekom">Deutsche Telekom</option>
-                    <option value="vodafone">Vodafone</option>
-                    <option value="o2">O2</option>
-                    <option value="swisscom">Swisscom</option>
-                    <option value="sunrise">Sunrise</option>
-                    <option value="salt">Salt</option>
-                </select>
+            <label for="provider">Select Provider:</label>
+            <select id="provider">
+                <option value="">Select Provider</option>
+            </select>
 
-                <button type="submit">Check Coverage</button>
-            </form>
-
-            <div id="result"></div>
+            <button onclick="checkCoverage()">Check Coverage</button>
         </div>
-    </main>
 
-    <footer>
-        <p>&copy; 2026 Broadband Coverage Checker | All Rights Reserved</p>
-    </footer>
+        <div id="coverage-result">
+            <!-- Result will be shown here -->
+        </div>
+    </div>
 
     <script>
-        async function checkCoverage(event) {
-            event.preventDefault();
-            const country = document.getElementById('country').value;
-            const provider = document.getElementById('provider').value;
-            const url = `http://127.0.0.1:5000/coverage?country=${country}&provider=${provider}`;
+        const mobileCoverageData = {
+            "Saudi Arabia": {
+                "STC": "95%",
+                "Mobily": "90%",
+                "Zain": "85%",
+            },
+            "UAE": {
+                "Etisalat": "98%",
+                "Du": "95%",
+            },
+            "France": {
+                "Orange": "90%",
+                "SFR": "85%",
+                "Bouygues Telecom": "80%",
+                "Free Mobile": "75%",
+            },
+            "Germany": {
+                "Deutsche Telekom": "90%",
+                "Vodafone": "85%",
+                "O2": "80%",
+            },
+            "Switzerland": {
+                "Swisscom": "98%",
+                "Sunrise": "92%",
+                "Salt": "85%",
+            },
+        };
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
+        // Populate provider options based on selected country
+        document.getElementById("country").addEventListener("change", function() {
+            const country = this.value;
+            const providerSelect = document.getElementById("provider");
+            providerSelect.innerHTML = "<option value=''>Select Provider</option>"; // Reset providers
 
-                if (data.coverage) {
-                    document.getElementById('result').innerHTML = 
-                        `<div class="success">Coverage for ${provider} in ${country}: ${data.coverage}. <br> Check the coverage map: <a href="${data.coverage_map_url}" target="_blank">Coverage Map</a></div>`;
-                } else {
-                    document.getElementById('result').innerHTML = 
-                        `<div class="error">${data.error}</div><small>${data.message}</small>`;
+            if (mobileCoverageData[country]) {
+                for (const provider in mobileCoverageData[country]) {
+                    const option = document.createElement("option");
+                    option.value = provider;
+                    option.textContent = provider;
+                    providerSelect.appendChild(option);
                 }
-            } catch (error) {
-                document.getElementById('result').innerHTML = 
-                    `<div class="error">Error: Unable to fetch data.</div><small>This is a simulated data source.</small>`;
+            }
+        });
+
+        function checkCoverage() {
+            const country = document.getElementById("country").value;
+            const provider = document.getElementById("provider").value;
+            const resultDiv = document.getElementById("coverage-result");
+
+            if (!country || !provider) {
+                resultDiv.innerHTML = "Please select both a country and provider.";
+                return;
+            }
+
+            if (mobileCoverageData[country] && mobileCoverageData[country][provider]) {
+                const coverage = mobileCoverageData[country][provider];
+                resultDiv.innerHTML = `${provider} coverage in ${country}: ${coverage}`;
+            } else {
+                resultDiv.innerHTML = "Coverage data not found.";
             }
         }
 
-        document.getElementById('coverage-form').addEventListener('submit', checkCoverage);
+        // Trigger initial population of provider options
+        document.getElementById("country").dispatchEvent(new Event('change'));
     </script>
-
 </body>
 </html>
